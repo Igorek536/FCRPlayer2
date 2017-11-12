@@ -16,7 +16,7 @@ class Launcher {
 
     private boolean isSystemSupported = true;
     private boolean bassInit = false;
-    private final Logger logger = LoggerFactory.getLogger(Launcher.class);
+    private final Logger logger = LoggerFactory.getLogger("Launcher");
     private final Runtime runtime = Runtime.getRuntime();
 
     Launcher() {
@@ -25,10 +25,10 @@ class Launcher {
             logger.debug("Loading natives...");
             loadNatives();
         }
-
         runtime.addShutdownHook(new Thread() {
             @Override
             public void run() {
+                logger.info("Goodbye...");
                 BASS_Free();
             }
         });

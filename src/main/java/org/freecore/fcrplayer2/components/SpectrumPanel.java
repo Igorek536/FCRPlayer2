@@ -1,5 +1,3 @@
-// BASS spectrum analyser example, copyright (c) 2002-2006 Ian Luck.
-
 package org.freecore.fcrplayer2.components;
 
 import jouvieje.bass.structures.BASS_CHANNELINFO;
@@ -64,7 +62,7 @@ public class SpectrumPanel extends JPanel {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                specmode = (specmode + 1) % 4;    //Swap spectrum mode
+                specmode = (specmode + 1) % 4; //Swap spectrum mode
                 reset3D();
             }
         });
@@ -103,46 +101,39 @@ public class SpectrumPanel extends JPanel {
 
             // waveform
             BASS_CHANNELINFO ci = BASS_CHANNELINFO.allocate();
-            BASS_ChannelGetInfo(chan, ci);                    //Get number of channels
+            BASS_ChannelGetInfo(chan, ci); //Get number of channels
             final int channels = ci.getChannels();
             ci.release();
 
             int size = channels * SPECTRUM_WIDTH * SIZEOF_FLOAT;
             if (buffer == null || buffer.capacity() < size)
-                buffer = newByteBuffer(size);    //Allocate buffer for data
+                buffer = newByteBuffer(size); //Allocate buffer for data
 
-            BASS_ChannelGetData(chan, buffer, size | BASS_DATA_FLOAT);        //Get the sample data (floating-point to avoid 8 & 16 bit processing)
+            BASS_ChannelGetData(chan, buffer, size | BASS_DATA_FLOAT); //Get the sample data (floating-point to avoid 8 & 16 bit processing)
             FloatBuffer floats = buffer.asFloatBuffer();
 
             for (int c = 0; c < channels; c++) {
                 for (int x = 0; x < SPECTRUM_WIDTH; x++) {
-                    int v = (int) ((1 - floats.get(x * channels + c)) * SPECTRUM_HEIGHT / 2);    //Invert and scale to fit display
-                    if (v < 0) {
+                    int v = (int) ((1 - floats.get(x * channels + c)) * SPECTRUM_HEIGHT / 2); //Invert and scale to fit display
+                    if (v < 0)
                         v = 0;
-                    } else if (v >= SPECTRUM_HEIGHT) {
+                    else if (v >= SPECTRUM_HEIGHT)
                         v = SPECTRUM_HEIGHT - 1;
-                    }
 
-                    if (x == 0) {
-                        y = v;
-                    }
+                    if (x == 0) y = v;
 
                     do {
                         // draw line from previous sample...
-                        if (y < v) {
-                            y++;
-                        } else if (y > v) {
-                            y--;
-                        }
-                        image.setRGB(x, swapY(y), (c == 1) ? color1 : color2);    //left=green, right=red (could add more colours to palette for more chans)
+                        if (y < v) y++;
+                        else if (y > v) y--;
+                        image.setRGB(x, swapY(y), (c == 1) ? color1 : color2); //left=green, right=red (could add more colours to palette for more chans)
                     } while (y != v);
                 }
             }
         } else {
             final int size = 1024 * SIZEOF_FLOAT;
-            if (buffer == null || buffer.capacity() < size) {
+            if (buffer == null || buffer.capacity() < size)
                 buffer = newByteBuffer(size);
-            }
 
             BASS_ChannelGetData(chan, buffer, BASS_DATA_FFT2048);    //Get the FFT data
             FloatBuffer floats = buffer.asFloatBuffer();
@@ -152,21 +143,17 @@ public class SpectrumPanel extends JPanel {
 
                 //"normal" FFT
                 for (int x = 0; x < SPECTRUM_WIDTH / 2; x++) {
-                    y = (int) (sqrt(floats.get(x + 1)) * 3 * SPECTRUM_HEIGHT - 4);    //Scale it (sqrt to make low values more visible)
+                    y = (int) (sqrt(floats.get(x + 1)) * 3 * SPECTRUM_HEIGHT - 4); //Scale it (sqrt to make low values more visible)
 
-                    if (y > SPECTRUM_HEIGHT) {
-                        y = SPECTRUM_HEIGHT;            //Cap it
-                    }
-                    if (x != 0 && (y1 = (y + y1) / 2) != 0) {    //Interpolate from previous to make the display smoother
-                        while (--y1 >= 0) {
-                            //image.setRGB(x * 2 - 1, swapY(y1), color1 + adjustIndex(y1 + 1));
+                    if (y > SPECTRUM_HEIGHT)
+                        y = SPECTRUM_HEIGHT; //Cap it
+                    if (x != 0 && (y1 = (y + y1) / 2) != 0) { //Interpolate from previous to make the display smoother
+                        while (--y1 >= 0)
                             image.setRGB(x * 2 - 1, swapY(y1), getIndexColor(adjustIndex(y1 + 1)));
-                        }
                     }
                     y1 = y;
-                    while (--y >= 0) {
-                        image.setRGB(x * 2, swapY(y), getIndexColor(adjustIndex(y + 1)));    //Draw level
-                    }
+                    while (--y >= 0)
+                        image.setRGB(x * 2, swapY(y), getIndexColor(adjustIndex(y + 1))); //Draw level
                 }
             } else if (specmode == 1) {
                 clearImage();
@@ -176,24 +163,15 @@ public class SpectrumPanel extends JPanel {
                 int b0 = 0;
                 for (int x = 0; x < BANDS; x++) {
                     int b1 = (int) pow(2, x * 10.0 / (BANDS - 1));
-                    if (b1 > 1023) {
-                        b1 = 1023;
-                    }
-                    if (b1 <= b0) {
-                        b1 = b0 + 1;        //Make sure it uses at least 1 FFT bin
-                    }
-
+                    if (b1 > 1023) b1 = 1023;
+                    if (b1 <= b0) b1 = b0 + 1; //Make sure it uses at least 1 FFT bin
                     int sc = 10 + b1 - b0;
-
                     float sum = 0;
-                    for (; b0 < b1; b0++) {
+                    for (; b0 < b1; b0++)
                         sum += floats.get(1 + b0);
-                    }
 
-                    y = (int) ((sqrt(sum / log10(sc)) * 1.7 * SPECTRUM_HEIGHT) - 4);    //Scale it
-                    if (y > SPECTRUM_HEIGHT) {
-                        y = SPECTRUM_HEIGHT;                //Cap it
-                    }
+                    y = (int) ((sqrt(sum / log10(sc)) * 1.7 * SPECTRUM_HEIGHT) - 4); //Scale it
+                    if (y > SPECTRUM_HEIGHT) y = SPECTRUM_HEIGHT; //Cap it
 
                     while (--y >= 0) {
                         //Sraw bar
@@ -214,9 +192,7 @@ public class SpectrumPanel extends JPanel {
                 //"3D"
                 for (int x = 0; x < SPECTRUM_HEIGHT; x++) {
                     y = (int) (sqrt(floats.get(x + 1)) * 3 * 127);    //Scale it (sqrt to make low values more visible)
-                    if (y > 127) {
-                        y = 127;    //Cap it
-                    }
+                    if (y > 127) y = 127;    //Cap it
                     image.setRGB(specpos, swapY(x), getIndexColor(128 + y));    //Plot it
                 }
                 //Move marker onto next position
