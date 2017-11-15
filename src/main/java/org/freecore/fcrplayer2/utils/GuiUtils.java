@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class GuiUtils {
 
@@ -20,5 +21,23 @@ public class GuiUtils {
         } catch (Exception e) {
             logger.error("LookAndFeel " + laf + " not found!", e);
         }
+    }
+
+    public static void updateComponentsUi(Component... components) {
+        for (Component component : components) {
+            SwingUtilities.updateComponentTreeUI(component);
+        }
+    }
+
+    public static boolean isWindowIconified() {
+        boolean result = false;
+        for (Frame frame : JFrame.getFrames()) {
+            if (frame.getExtendedState() == JFrame.ICONIFIED) {
+                result = true;
+            } else {
+                result = false;
+            }
+        }
+        return result;
     }
 }

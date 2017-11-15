@@ -1,5 +1,7 @@
 package org.freecore.fcrplayer2.components;
 
+import org.freecore.fcrplayer2.utils.GuiUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -38,7 +40,7 @@ public class MemoryMonitor extends JPanel implements Runnable {
 
         // Специально для этого компонента, был подобран подходящий шрифт!
         ClassLoader classLoader = getClass().getClassLoader();
-        try (InputStream fontStream = classLoader.getResourceAsStream("fonts"+ File.separator +"Hack-Regular.ttf")) {
+        try (InputStream fontStream = classLoader.getResourceAsStream("fonts" + File.separator + "Hack-Regular.ttf")) {
             Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
             mainFont = font.deriveFont(Font.PLAIN, 11);
         } catch (IOException | FontFormatException e) {
@@ -76,6 +78,7 @@ public class MemoryMonitor extends JPanel implements Runnable {
 
     @Override
     public void paint(Graphics graphics) {
+        if (GuiUtils.isWindowIconified() && !this.isVisible()) return;
         if (graphics2D == null) return;
 
         graphics2D.setRenderingHint // Сглаживание текста
@@ -88,7 +91,7 @@ public class MemoryMonitor extends JPanel implements Runnable {
         float freeMemory = runtime.freeMemory();
         float totalMemory = runtime.totalMemory();
         //int kb = 1024; // Килобайты
-        int mb = 1024*1024; // Магабайты
+        int mb = 1024 * 1024; // Магабайты
         float used = (totalMemory - freeMemory) / 8 / mb;
         float total = totalMemory / 8 / mb;
 
@@ -182,6 +185,7 @@ public class MemoryMonitor extends JPanel implements Runnable {
             }
         }
         graphics.drawImage(bufferedImage, 0, 0, this);
+
     }
 
     @SuppressWarnings("WeakerAccess")

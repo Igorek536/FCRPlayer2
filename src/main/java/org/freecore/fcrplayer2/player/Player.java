@@ -1,12 +1,11 @@
 package org.freecore.fcrplayer2.player;
 
-import java.io.File;
-
 public interface Player {
     void play(String url);
-    void play(File file);
     void stop();
     void pause();
+    void start();
     void setVolume(float volume);
-    String getTrack();
+    void setDefaultVolume(float volume);
+    String getMeta();
 }

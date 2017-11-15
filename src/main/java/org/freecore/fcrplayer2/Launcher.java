@@ -104,6 +104,7 @@ class Launcher {
     void launch() {
         MainFrame mainFrame = new MainFrame();
         logger.debug("Launching...");
+        mainFrame.setTitle("FCRPlayer2 ver. 2.0.1 ");
         mainFrame.init();
     }
 }
