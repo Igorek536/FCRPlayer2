@@ -7,5 +7,7 @@ public interface Player {
     void start();
     void setVolume(float volume);
     void setDefaultVolume(float volume);
+    void setBalance(float balance);
+    void setDefaultBalance(float balance);
     String getMeta();
 }

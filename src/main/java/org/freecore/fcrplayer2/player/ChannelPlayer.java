@@ -13,6 +13,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static jouvieje.bass.Bass.*;
+import static jouvieje.bass.defines.BASS_ATTRIB.BASS_ATTRIB_PAN;
 import static jouvieje.bass.defines.BASS_ATTRIB.BASS_ATTRIB_VOL;
 import static jouvieje.bass.defines.BASS_CONFIG.BASS_CONFIG_NET_PLAYLIST;
 import static jouvieje.bass.defines.BASS_FILEPOS.*;
@@ -22,8 +23,9 @@ import static jouvieje.bass.defines.BASS_TAG.BASS_TAG_OGG;
 
 public class ChannelPlayer implements Player {
 
-    private HSTREAM channel;
+    private static HSTREAM channel;
     private float volume;
+    private float balance;
     private Thread radioThread = null;
     private Timer channelTimer;
     private Timer visTimer;
@@ -39,7 +41,6 @@ public class ChannelPlayer implements Player {
         this.spectrum = spectrum;
         BASS_SetConfig(BASS_CONFIG_NET_PLAYLIST, 1);
         BASS_StreamFree(channel);
-
     }
 
     private DOWNLOADPROC statusProc = (buffer, length, user) -> {
@@ -95,7 +96,6 @@ public class ChannelPlayer implements Player {
                     channelTimer.cancel();
                     visTimer.cancel();
                 } catch (Exception ignored) {
-
                 }
                 BASS_StreamFree(channel);
                 channel = BASS_StreamCreateURL(url, 0,
@@ -114,6 +114,7 @@ public class ChannelPlayer implements Player {
                     runTimer();
                     updateVis();
                     BASS_ChannelSetAttribute(channel.asInt(), BASS_ATTRIB_VOL, volume);
+                    BASS_ChannelSetAttribute(channel.asInt(), BASS_ATTRIB_PAN, balance);
                 }
                 radioThread = null;
             }
@@ -142,13 +143,25 @@ public class ChannelPlayer implements Player {
         if (channel != null) {
             BASS_ChannelSetAttribute(channel.asInt(), BASS_ATTRIB_VOL, volume);
         }
-        //BASS_SetVolume(volume);
     }
 
     @Override
     public void setDefaultVolume(float volume) {
         this.volume = volume;
         setVolume(volume);
+    }
+
+    @Override
+    public void setBalance(float balance) {
+        if (channel != null) {
+            BASS_ChannelSetAttribute(channel.asInt(), BASS_ATTRIB_PAN, balance);
+        }
+    }
+
+    @Override
+    public void setDefaultBalance(float balance) {
+        this.balance = balance;
+        setBalance(balance);
     }
 
     @Override
@@ -160,6 +173,7 @@ public class ChannelPlayer implements Player {
         } catch (Exception e) {
             return null;
         }
+
         if (metaBuff != null) {
             String meta = metaBuff.asString();
             // got Shoutcast metadata
@@ -193,10 +207,11 @@ public class ChannelPlayer implements Player {
                     metaBuff = metaBuff.asPointer(length + 1);
                 }
 
-                if (artist != null && title != null)
+                if (artist != null && title != null) {
                     result = artist + " - " + title;
-                else if (title != null)
+                } else if (title != null) {
                     result = title;
+                }
             }
         }
         return (result != null && result.equals("''")) ? "undefined" : result;

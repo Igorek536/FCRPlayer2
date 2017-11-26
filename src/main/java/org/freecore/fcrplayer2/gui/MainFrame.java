@@ -5,6 +5,7 @@ import org.freecore.fcrplayer2.components.SpectrumPanel;
 import org.freecore.fcrplayer2.player.ChannelPlayer;
 import org.freecore.fcrplayer2.player.Player;
 import org.freecore.fcrplayer2.utils.GuiUtils;
+import org.freecore.fcrplayer2.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,20 +19,22 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class MainFrame extends JFrame {
+public class MainFrame extends JFrame implements GuiFrame {
 
-    private final int width = 450, height = 315;
+    private final int width = 450, height = 330;
     private final String laf = "Nimbus";
     private final int sliderMin = 0, sliderMax = 100, sliderCurr = 0;
+    private String[] metas = new String[2];
 
     String mp3_rr = "http://air.radiorecord.ru:8101/rr_320";
     String aac_test2 = "http://ruhit3.imgradio.pro:80/RusHit48";
 
-    String[] strs = {"hello", "QWERTYUIOPASDFGHJKLZXCVBNMQWERTYUIOPASDFGHJKLZXCVBNMQWERTYUIOPASDFGHJKLZXCVBNMN", "YYYYYEAH!"};
+    String[] strs = {"hello", "123456789 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30", "YYYYYEAH!"};
     private final Logger logger = LoggerFactory.getLogger("MainFrame");
     private boolean pause = false;
     private Timer metaTimer;
@@ -43,6 +46,7 @@ public class MainFrame extends JFrame {
     private final SpectrumPanel soundVis;
     private final JComboBox<String> stationList;
     private final JSlider volumeSlider;
+    private final JSlider balanceSlider;
     private final JButton playButton;
     private final JButton stopButton;
     private final JButton pauseButton;
@@ -55,6 +59,7 @@ public class MainFrame extends JFrame {
             soundVisC = new GridBagConstraints(),
             stationListC = new GridBagConstraints(),
             volumeSliderC = new GridBagConstraints(),
+            balanceSliderC = new GridBagConstraints(),
             playButtonC = new GridBagConstraints(),
             stopButtonC = new GridBagConstraints(),
             pauseButtonC = new GridBagConstraints(),
@@ -93,7 +98,7 @@ public class MainFrame extends JFrame {
         playButtonC.gridx      = 0;
         playButtonC.gridy      = 4;
         playButtonC.gridwidth  = 1;
-        playButtonC.gridheight = 1;
+        playButtonC.gridheight = 2;
         playButtonC.weightx    = 0;
         playButtonC.weighty    = 0;
         playButtonC.anchor     = GridBagConstraints.NORTHEAST;
@@ -104,7 +109,7 @@ public class MainFrame extends JFrame {
         stopButtonC.gridx      = 1;
         stopButtonC.gridy      = 4;
         stopButtonC.gridwidth  = 1;
-        stopButtonC.gridheight = 1;
+        stopButtonC.gridheight = 2;
         stopButtonC.weightx    = 0;
         stopButtonC.weighty    = 0;
         stopButtonC.anchor     = GridBagConstraints.NORTHWEST;
@@ -115,7 +120,7 @@ public class MainFrame extends JFrame {
         pauseButtonC.gridx      = 2;
         pauseButtonC.gridy      = 4;
         pauseButtonC.gridwidth  = 1;
-        pauseButtonC.gridheight = 1;
+        pauseButtonC.gridheight = 2;
         pauseButtonC.weightx    = 0;
         pauseButtonC.weighty    = 0;
         pauseButtonC.anchor     = GridBagConstraints.NORTHWEST;
@@ -133,11 +138,22 @@ public class MainFrame extends JFrame {
         volumeSliderC.fill       = GridBagConstraints.HORIZONTAL;
         volumeSliderC.insets = new Insets(1, 1, 1, 1);
 
+        // BalanceSlider
+        balanceSliderC.gridx      = 3;
+        balanceSliderC.gridy      = 5;
+        balanceSliderC.gridwidth  = 2;
+        balanceSliderC.gridheight = 1;
+        balanceSliderC.weightx    = 0;
+        balanceSliderC.weighty    = 0;
+        balanceSliderC.anchor     = GridBagConstraints.NORTHWEST;
+        balanceSliderC.fill       = GridBagConstraints.HORIZONTAL;
+        balanceSliderC.insets = new Insets(1, 1, 1, 1);
+
         // ManagerButton
         managerButtonC.gridx      = 0;
-        managerButtonC.gridy      = 5;
+        managerButtonC.gridy      = 6;
         managerButtonC.gridwidth  = 2;
-        managerButtonC.gridheight = 1;
+        managerButtonC.gridheight = 2;
         managerButtonC.weightx    = 0;
         managerButtonC.weighty    = 0;
         managerButtonC.anchor     = GridBagConstraints.NORTHWEST;
@@ -146,9 +162,9 @@ public class MainFrame extends JFrame {
 
         // AboutButton
         aboutButtonC.gridx      = 2;
-        aboutButtonC.gridy      = 5;
+        aboutButtonC.gridy      = 6;
         aboutButtonC.gridwidth  = 1;
-        aboutButtonC.gridheight = 1;
+        aboutButtonC.gridheight = 2;
         aboutButtonC.weightx    = 0;
         aboutButtonC.weighty    = 0;
         aboutButtonC.anchor     = GridBagConstraints.NORTHWEST;
@@ -156,9 +172,9 @@ public class MainFrame extends JFrame {
         aboutButtonC.insets = new Insets(0, 1, 1, 1);
 
         // MonitorCheck
-        monitorCheckC.gridx      = 0;
+        monitorCheckC.gridx      = 3;
         monitorCheckC.gridy      = 6;
-        monitorCheckC.gridwidth  = 3;
+        monitorCheckC.gridwidth  = 1;
         monitorCheckC.gridheight = 1;
         monitorCheckC.weightx    = 0;
         monitorCheckC.weighty    = 0;
@@ -168,7 +184,7 @@ public class MainFrame extends JFrame {
 
         // HeapMonitor
         heapMonitorC.gridx      = 4;
-        heapMonitorC.gridy      = 5;
+        heapMonitorC.gridy      = 6;
         heapMonitorC.gridwidth  = 1;
         heapMonitorC.gridheight = 3;
         heapMonitorC.weightx    = 0;
@@ -179,7 +195,7 @@ public class MainFrame extends JFrame {
 
         // TrackField
         trackFieldC.gridx      = 0;
-        trackFieldC.gridy      = 7;
+        trackFieldC.gridy      = 8;
         trackFieldC.gridwidth  = 4;
         trackFieldC.gridheight = 1;
         trackFieldC.weightx    = 0.6;
@@ -195,12 +211,13 @@ public class MainFrame extends JFrame {
         soundVis = new SpectrumPanel(width, 150);
         stationList = new JComboBox<>(strs);
         volumeSlider = new JSlider(sliderMin, sliderMax, sliderCurr);
-        playButton = new JButton("Play");
-        stopButton = new JButton("Stop");
-        pauseButton = new JButton("Pause");
-        managerButton = new JButton("Radio Manager");
-        aboutButton = new JButton("About");
-        monitorCheck = new JCheckBox("Show memory monitor?");
+        balanceSlider = new JSlider(-5, 5, 0);
+        playButton = new JButton(new ImageIcon(Utils.getResource("/icons/play.png")));
+        stopButton = new JButton(new ImageIcon(Utils.getResource("/icons/stop.png")));
+        pauseButton = new JButton(new ImageIcon(Utils.getResource("/icons/pause.png")));
+        managerButton = new JButton(new ImageIcon(Utils.getResource("/icons/radio.png")));
+        aboutButton = new JButton(new ImageIcon(Utils.getResource("/icons/about.png")));
+        monitorCheck = new JCheckBox("Show monitor?", true);
         heapMonitor = new MemoryMonitor(130, 70, 700);
         trackField = new JTextField();
 
@@ -215,6 +232,15 @@ public class MainFrame extends JFrame {
             }
         });
 
+        // BalanceSlider
+        balanceSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                player.setBalance(balanceSlider.getValue() * 0.1f);
+                balanceSlider.setToolTipText("Balance: " + balanceSlider.getValue());
+            }
+        });
+
         // PlayButton
         playButton.addActionListener(new ActionListener() {
             @Override
@@ -222,12 +248,9 @@ public class MainFrame extends JFrame {
                 player.play(mp3_rr);
                 player.start();
                 player.setDefaultVolume(volumeSlider.getValue() * 0.01f);
+                player.setDefaultBalance(balanceSlider.getValue() * 0.1f);
                 if (metaTimer != null) metaTimer.cancel();
                 metaTimer();
-                if (pause) {
-                    pause = false;
-                    pauseButton.setText("Pause");
-                }
             }
         });
 
@@ -245,11 +268,9 @@ public class MainFrame extends JFrame {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (!pause) {
                     player.pause();
-                    pauseButton.setText("Resume");
                     pause = true;
                 } else {
                     player.start();
-                    pauseButton.setText("Pause");
                     pause = false;
                 }
             }
@@ -267,21 +288,29 @@ public class MainFrame extends JFrame {
             }
         });
 
+        // MonitorCheck
+        monitorCheck.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                if (monitorCheck.isSelected())
+                    activeHeapMon(true);
+                else
+                    activeHeapMon(false);
+            }
+        });
+
         // Other options
 
         volumeSlider.setToolTipText("Volume: " + volumeSlider.getValue());
+        balanceSlider.setToolTipText("Balance: " + balanceSlider.getValue());
         trackField.setToolTipText("Click to copy text to clipboard");
-
-        volumeSlider.setMinorTickSpacing(1);
-        volumeSlider.setPaintTicks(true);
-        volumeSlider.setPaintLabels(true);
         trackField.setEditable(false);
 
         // LAF
 
         GuiUtils.setlaf(laf);
         GuiUtils.updateComponentsUi(this, soundVis, stationList, playButton,
-                stopButton, pauseButton, volumeSlider, managerButton, aboutButton,
+                stopButton, pauseButton, volumeSlider, balanceSlider, managerButton, aboutButton,
                 monitorCheck, heapMonitor, trackField);
     }
 
@@ -294,6 +323,16 @@ public class MainFrame extends JFrame {
         this.setVisible(true);
     }
 
+    private void activeHeapMon(boolean act) {
+        if (act) {
+            heapMonitor.start();
+            heapMonitor.setVisible(true);
+        } else {
+            heapMonitor.stop();
+            heapMonitor.setVisible(false);
+        }
+    }
+
     private void metaTimer() {
         metaTimer = new Timer();
         metaTimer.schedule(new TimerTask() {
@@ -303,16 +342,22 @@ public class MainFrame extends JFrame {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
-                            trackField.setText(player.getMeta());
+                            String meta = player.getMeta();
+                            metas[0] = metas[1];
+                            metas[1] = meta;
+                            if (!Objects.equals(metas[0], metas[1])) {
+                                trackField.setText(meta);
+                            }
                         }
                     });
                 } catch (InvocationTargetException | InterruptedException e) {
-                    logger.error("Err in SwingWorker", e);
+                    logger.error("MetaTimer exeption!", e);
                 }
             }
         }, 200, 1500);
     }
 
+    @Override
     public void init() {
         this.add(soundVis, soundVisC);
         this.add(stationList, stationListC);
@@ -320,6 +365,7 @@ public class MainFrame extends JFrame {
         this.add(stopButton, stopButtonC);
         this.add(pauseButton, pauseButtonC);
         this.add(volumeSlider, volumeSliderC);
+        this.add(balanceSlider, balanceSliderC);
         this.add(managerButton, managerButtonC);
         this.add(aboutButton, aboutButtonC);
         this.add(monitorCheck, monitorCheckC);
@@ -327,7 +373,7 @@ public class MainFrame extends JFrame {
         this.add(trackField, trackFieldC);
 
         player = new ChannelPlayer(soundVis);
-        heapMonitor.start();
+        activeHeapMon(true);
         metaTimer();
     }
 }

@@ -1,14 +1,17 @@
 package org.freecore.fcrplayer2;
 
 import jouvieje.bass.BassInit;
+import org.freecore.fcrplayer2.exceptions.PIDException;
+import org.freecore.fcrplayer2.exceptions.UnsupportedOSException;
+import org.freecore.fcrplayer2.gui.GuiFrame;
 import org.freecore.fcrplayer2.gui.MainFrame;
-import org.freecore.fcrplayer2.utils.OSUtils;
+import org.freecore.fcrplayer2.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
-import static jouvieje.bass.Bass.BASS_Free;
 import static jouvieje.bass.Bass.BASS_Init;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -29,19 +32,28 @@ class Launcher {
             @Override
             public void run() {
                 logger.info("Goodbye...");
-                BASS_Free();
+                try {
+                    String pid = Utils.getProcessId();
+                    logger.debug("Force killing current process with pid " + pid);
+                    Utils.killProcess(pid);
+                } catch (IOException e) {
+                    logger.error("Can't kill process!", e);
+                } catch (PIDException e) {
+                    logger.error("Can't get process id!", e);
+                } catch (UnsupportedOSException e) {
+                    logger.error("This OS is unsupported!", e);
+                }
             }
         });
     }
 
     private void setLibPath() {
-        OSUtils os = new OSUtils();
         StringBuilder sb = new StringBuilder();
         String fs = File.separator;
         sb.append("libraries").append(fs);
         sb.append("natives").append(fs);
         sb.append("bass").append(fs);
-        switch (os.getOS()) {
+        switch (Utils.getOS()) {
             case LINUX: {
                 sb.append("linux").append(fs);
                 sb.append("i386");
@@ -102,9 +114,8 @@ class Launcher {
     }
 
     void launch() {
-        MainFrame mainFrame = new MainFrame();
+        GuiFrame mainFrame = new MainFrame();
         logger.debug("Launching...");
-        mainFrame.setTitle("FCRPlayer2 ver. 2.0.1 ");
         mainFrame.init();
     }
 }
