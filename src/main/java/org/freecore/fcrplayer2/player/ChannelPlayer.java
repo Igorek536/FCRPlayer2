@@ -4,10 +4,10 @@ import jouvieje.bass.callbacks.DOWNLOADPROC;
 import jouvieje.bass.structures.HSTREAM;
 import jouvieje.bass.utils.BufferUtils;
 import jouvieje.bass.utils.Pointer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.freecore.fcrplayer2.components.SpectrumPanel;
-import org.freecore.fcrplayer2.utils.GuiUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.freecore.fcrplayer2.gui.MainFrame;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,15 +30,19 @@ public class ChannelPlayer implements Player {
     private Timer channelTimer;
     private Timer visTimer;
     private SpectrumPanel spectrum;
-    private final Logger logger = LoggerFactory.getLogger("ChannelPlayer");
+    private final Logger logger = LogManager.getLogger("ChannelPlayer");
 
-    public ChannelPlayer() {
+    private MainFrame mainFrame;
+
+    public ChannelPlayer(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         BASS_SetConfig(BASS_CONFIG_NET_PLAYLIST, 1);
         BASS_StreamFree(channel);
     }
 
-    public ChannelPlayer(SpectrumPanel spectrum) {
+    public ChannelPlayer(SpectrumPanel spectrum, MainFrame mainFrame) {
         this.spectrum = spectrum;
+        this.mainFrame = mainFrame;
         BASS_SetConfig(BASS_CONFIG_NET_PLAYLIST, 1);
         BASS_StreamFree(channel);
     }
@@ -73,7 +77,7 @@ public class ChannelPlayer implements Player {
         visTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (spectrum != null && !GuiUtils.isWindowIconified()) {
+                if (spectrum != null && !mainFrame.mainFrameIconified) {
                     try {
                         spectrum.update(channel.asInt());
                     } catch (Exception ignored) {
@@ -106,7 +110,9 @@ public class ChannelPlayer implements Player {
                     channel = BASS_AAC_StreamCreateURL(url, 0,
                             BASS_STREAM_BLOCK | BASS_STREAM_STATUS | BASS_STREAM_AUTOFREE,
                             statusProc, null);
-                    if (channel != null) logger.debug("This is AAC stream! It should works!");
+                    if (channel != null) {
+                        logger.debug("This is AAC stream! It should works!");
+                    }
                 } else {
                     logger.debug("Using default!");
                 }
@@ -167,7 +173,7 @@ public class ChannelPlayer implements Player {
     @Override
     public String getMeta() {
         String result = null;
-        Pointer metaBuff = null;
+        Pointer metaBuff;
         try {
             metaBuff = BASS_ChannelGetTags(channel.asInt(), BASS_TAG_META);
         } catch (Exception e) {

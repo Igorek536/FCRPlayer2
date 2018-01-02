@@ -9,9 +9,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class MemoryMonitor extends JPanel implements Runnable {
     private Runtime runtime = Runtime.getRuntime();
@@ -28,7 +25,7 @@ public class MemoryMonitor extends JPanel implements Runnable {
     private int ascent, descent; // Подъем шрифта, спуск шрифта.
     private BufferedImage bufferedImage;
     private Graphics2D graphics2D;
-    private Font mainFont;
+    private Font mainFont = GuiUtils.getFont("fonts/Hack-Regular.ttf", Font.PLAIN, 11);
     private Dimension size;
 
     @SuppressWarnings("WeakerAccess")
@@ -38,14 +35,6 @@ public class MemoryMonitor extends JPanel implements Runnable {
         this.updateInterval = updateInterval;
         size = new Dimension(width, height);
 
-        // Специально для этого компонента, был подобран подходящий шрифт!
-        ClassLoader classLoader = getClass().getClassLoader();
-        try (InputStream fontStream = classLoader.getResourceAsStream("fonts" + File.separator + "Hack-Regular.ttf")) {
-            Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            mainFont = font.deriveFont(Font.PLAIN, 11);
-        } catch (IOException | FontFormatException e) {
-            mainFont = super.getFont();
-        }
         super.setBackground(Color.BLACK);
 
         // По клику мыши на компоненте, он перестаёт обновлятся. Повторный клик для возобновления.

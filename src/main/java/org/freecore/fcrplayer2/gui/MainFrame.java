@@ -1,23 +1,20 @@
 package org.freecore.fcrplayer2.gui;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.freecore.fcrplayer2.Launcher;
 import org.freecore.fcrplayer2.components.MemoryMonitor;
 import org.freecore.fcrplayer2.components.SpectrumPanel;
 import org.freecore.fcrplayer2.player.ChannelPlayer;
 import org.freecore.fcrplayer2.player.Player;
 import org.freecore.fcrplayer2.utils.GuiUtils;
 import org.freecore.fcrplayer2.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import java.util.Timer;
@@ -28,14 +25,10 @@ public class MainFrame extends JFrame implements GuiFrame {
 
     private final int width = 450, height = 330;
     private final String laf = "Nimbus";
-    private final int sliderMin = 0, sliderMax = 100, sliderCurr = 0;
+    private final String title = "FCRPlayer2 ";
     private String[] metas = new String[2];
 
-    String mp3_rr = "http://air.radiorecord.ru:8101/rr_320";
-    String aac_test2 = "http://ruhit3.imgradio.pro:80/RusHit48";
-
-    String[] strs = {"hello", "123456789 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30", "YYYYYEAH!"};
-    private final Logger logger = LoggerFactory.getLogger("MainFrame");
+    private final Logger logger = LogManager.getLogger("MainFrame");
     private boolean pause = false;
     private Timer metaTimer;
 
@@ -69,6 +62,11 @@ public class MainFrame extends JFrame implements GuiFrame {
             heapMonitorC = new GridBagConstraints(),
             trackFieldC = new GridBagConstraints();
 
+    // Flags
+    public boolean managerOpened = false;
+    public boolean mainFrameIconified = false;
+    private boolean noMeta = false;
+
     // Constraints initialization
 
     {
@@ -77,8 +75,10 @@ public class MainFrame extends JFrame implements GuiFrame {
         soundVisC.gridy      = 0; // Положение по Y
         soundVisC.gridwidth  = 5; // Сколько занимает клеток по X
         soundVisC.gridheight = 3; // Сколько занимает клеток по Y
-        soundVisC.weightx    = 0; // На сколько может растягиваться по X
-        soundVisC.weighty    = 0; // На сколько может растягиваться по Y
+        soundVisC.weightx    = 0; // На сколько % может растягиваться по X
+        soundVisC.weighty    = 0; // На сколько % может растягиваться по Y
+        soundVisC.ipadx      = 0; // Сколько пикселей добавлять по X
+        soundVisC.ipady      = 0; // Сколько пикселей добавлять по Y
         soundVisC.anchor     = GridBagConstraints.NORTH;        // Якорь
         soundVisC.fill       = GridBagConstraints.HORIZONTAL;   // Как будет заполняться?
         soundVisC.insets = new Insets(0, 0, 1, 0); // top, left, bottom, right  - отступы
@@ -209,8 +209,8 @@ public class MainFrame extends JFrame implements GuiFrame {
 
     {
         soundVis = new SpectrumPanel(width, 150);
-        stationList = new JComboBox<>(strs);
-        volumeSlider = new JSlider(sliderMin, sliderMax, sliderCurr);
+        stationList = new JComboBox<>();
+        volumeSlider = new JSlider(0, 100, 0);
         balanceSlider = new JSlider(-5, 5, 0);
         playButton = new JButton(new ImageIcon(Utils.getResource("/icons/play.png")));
         stopButton = new JButton(new ImageIcon(Utils.getResource("/icons/stop.png")));
@@ -224,94 +224,144 @@ public class MainFrame extends JFrame implements GuiFrame {
         // Actions
 
         // VolumeSlider
+        volumeSlider.setValue(Launcher.getConfig().getVolume());
         volumeSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
-                player.setVolume(volumeSlider.getValue() * 0.01f);
-                volumeSlider.setToolTipText("Volume: " + volumeSlider.getValue());
+                int val = volumeSlider.getValue();
+                player.setVolume(val * 0.01f);
+                volumeSlider.setToolTipText("Volume: " + val);
+                Launcher.getConfig().setVolume(val);
             }
         });
 
         // BalanceSlider
+        balanceSlider.setValue(Launcher.getConfig().getBalance());
         balanceSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
-                player.setBalance(balanceSlider.getValue() * 0.1f);
-                balanceSlider.setToolTipText("Balance: " + balanceSlider.getValue());
+                int val = balanceSlider.getValue();
+                player.setBalance(val * 0.1f);
+                balanceSlider.setToolTipText("Balance: " + val);
+                Launcher.getConfig().setBalance(val);
             }
         });
+
+        // StationList
+        updateStationList();
 
         // PlayButton
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                player.play(mp3_rr);
                 player.start();
+                if (pause) {
+                    pause = false;
+                    return;
+                }
+                player.play(Launcher.getConfig().getStation((String) stationList.getSelectedItem()));
                 player.setDefaultVolume(volumeSlider.getValue() * 0.01f);
                 player.setDefaultBalance(balanceSlider.getValue() * 0.1f);
                 if (metaTimer != null) metaTimer.cancel();
                 metaTimer();
+                MainFrame.super.setTitle(title + "(Playing: " + stationList.getSelectedItem() + ")");
             }
         });
 
         // StopButton
-        stopButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                player.stop();
-            }
+        stopButton.addActionListener(actionEvent -> {
+            player.stop();
+            super.setTitle(title);
         });
 
         // PauseButton
-        pauseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (!pause) {
-                    player.pause();
-                    pause = true;
-                } else {
-                    player.start();
-                    pause = false;
-                }
+        pauseButton.addActionListener(actionEvent -> {
+            if (!pause) {
+                player.pause();
+                pause = true;
             }
+        });
+
+        // ManagerButton
+        managerButton.addActionListener(actionEvent -> {
+            if (managerOpened) return;
+            ManagerFrame managerFrame = new ManagerFrame(this);
+            managerFrame.init();
         });
 
         // TrackField
         trackField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
+                if (noMeta) return;
                 String txt = trackField.getText();
-                Toolkit.getDefaultToolkit()
-                        .getSystemClipboard()
-                        .setContents(new StringSelection(txt), null);
+                Utils.copyToClipboard(txt);
                 logger.debug("String '" + txt + "' copied to clipboard!");
             }
         });
 
         // MonitorCheck
+        monitorCheck.setSelected(Launcher.getConfig().isMonitor());
         monitorCheck.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
-                if (monitorCheck.isSelected())
-                    activeHeapMon(true);
-                else
-                    activeHeapMon(false);
+                boolean val = monitorCheck.isSelected();
+                activeHeapMon(val);
+                Launcher.getConfig().setMonitor(val);
             }
         });
 
-        // Other options
+        // MainFrame
+        this.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent windowEvent) { }
 
+            @Override
+            public void windowClosing(WindowEvent windowEvent) { }
+
+            @Override
+            public void windowClosed(WindowEvent windowEvent) { }
+
+            @Override
+            public void windowIconified(WindowEvent windowEvent) {
+                mainFrameIconified = true;
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent windowEvent) {
+                mainFrameIconified = false;
+            }
+
+            @Override
+            public void windowActivated(WindowEvent windowEvent) { }
+
+            @Override
+            public void windowDeactivated(WindowEvent windowEvent) { }
+        });
+
+        // Other options
+        trackField.setEditable(false);
+
+        // Tooltips
         volumeSlider.setToolTipText("Volume: " + volumeSlider.getValue());
         balanceSlider.setToolTipText("Balance: " + balanceSlider.getValue());
         trackField.setToolTipText("Click to copy text to clipboard");
-        trackField.setEditable(false);
+        managerButton.setToolTipText("Radio manager");
+        aboutButton.setToolTipText("About FCRPlayer2");
+        playButton.setToolTipText("Play");
+        stopButton.setToolTipText("Stop");
+        pauseButton.setToolTipText("Pause");
+
+        // Fonts
+        stationList.setFont(GuiUtils.getFont("fonts/Helvetica.otf", Font.PLAIN, 13));
+        monitorCheck.setFont(GuiUtils.getFont("fonts/Helvetica.otf", Font.PLAIN, 13));
+        trackField.setFont(GuiUtils.getFont("fonts/AvenirNextCyr-Medium.ttf", Font.PLAIN, 13));
 
         // LAF
-
         GuiUtils.setlaf(laf);
         GuiUtils.updateComponentsUi(this, soundVis, stationList, playButton,
-                stopButton, pauseButton, volumeSlider, balanceSlider, managerButton, aboutButton,
-                monitorCheck, heapMonitor, trackField);
+                stopButton, pauseButton, volumeSlider, balanceSlider, managerButton,
+                aboutButton, monitorCheck, heapMonitor, trackField);
     }
 
     public MainFrame() {
@@ -320,6 +370,7 @@ public class MainFrame extends JFrame implements GuiFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setLayout(new GridBagLayout());
+        this.setTitle(title);
         this.setVisible(true);
     }
 
@@ -333,25 +384,39 @@ public class MainFrame extends JFrame implements GuiFrame {
         }
     }
 
+    public void updateStationList() {
+        stationList.removeAllItems();
+        for (String s : Launcher.getConfig().getStations()) {
+            stationList.addItem(s);
+        }
+    }
+
     private void metaTimer() {
         metaTimer = new Timer();
         metaTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            String meta = player.getMeta();
-                            metas[0] = metas[1];
-                            metas[1] = meta;
-                            if (!Objects.equals(metas[0], metas[1])) {
-                                trackField.setText(meta);
-                            }
+                    SwingUtilities.invokeAndWait(() -> {
+                        String meta = player.getMeta();
+                        metas[0] = metas[1];
+                        metas[1] = meta;
+                        if (!Objects.equals(metas[0], metas[1])) {
+                            try {
+                                if (meta.equals("")) {
+                                    trackField.setText("[NO METADATA FOUND]");
+                                    trackField.setEnabled(false);
+                                    noMeta = true;
+                                    return;
+                                }
+                            } catch (Exception ignored) {}
+                            if (!trackField.isEnabled()) trackField.setEnabled(true);
+                            noMeta = false;
+                            trackField.setText(meta);
                         }
                     });
                 } catch (InvocationTargetException | InterruptedException e) {
-                    logger.error("MetaTimer exeption!", e);
+                    logger.error("Error in metadata timer!", e);
                 }
             }
         }, 200, 1500);
@@ -372,8 +437,10 @@ public class MainFrame extends JFrame implements GuiFrame {
         this.add(heapMonitor, heapMonitorC);
         this.add(trackField, trackFieldC);
 
-        player = new ChannelPlayer(soundVis);
-        activeHeapMon(true);
+        player = new ChannelPlayer(soundVis, this);
+        player.setVolume(volumeSlider.getValue() * 0.01f);
+        player.setBalance(balanceSlider.getValue() * 0.1f);
+        activeHeapMon(monitorCheck.isSelected());
         metaTimer();
     }
 }

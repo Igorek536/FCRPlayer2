@@ -1,25 +1,31 @@
 // -=Gradle build script=-
 // Project : FCRPlayer2
 // Author  : Igorek536
-// Version : 0.2
+// Version : 0.3
+//
+//=================================
+// Required Gradle version: 4.4.1
+// Required Java version  : 9.0.1
+//=================================
+//
+// Until proguard 6.0beta2 not released, obfuscation is not supported!
 
-import proguard.gradle.ProGuardTask
+//import proguard.gradle.ProGuardTask
 
-// ---------------- <   project > ----------------
+// ---------------- < project > ----------------
 group   'org.freecore'
-version '2.0-SNAPSHOT'
-// ---------------- < / project > ----------------
+version '2.0.1-DEV'
 
-// ---------------- <   plugins > ----------------
+// ---------------- < plugins > ----------------
 apply plugin : 'java'
 apply plugin : 'application'
-// ---------------- < / plugins > ----------------
 
-// ---------------- <   settings > ----------------
+// ---------------- < settings > ----------------
 def jarpath         = 'build/libs/'                        // Path to libraries in build directory
 def jarname         = 'FCRPlayer2'                         // Name of .jar file
 def mainClass       = 'org.freecore.fcrplayer2.FCRPlayer2' // Main class
-def compat          =  1.8                                 // Java's version
+def moduleName      = 'org.freecore.fcrplayer'
+def compat          =  9                                   // Java's version
 def proguardCfgPath = 'proguard.txt'                       // Path to proguard's configuration
 
 repositories {
@@ -29,13 +35,11 @@ repositories {
 }
 dependencies {
     compile name: 'NativeBass'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.9.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.9.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.9.1'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.10.0'
     compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.16'
 }
-// ---------------- < / settings > ----------------
 // DO NOT EDIT LINES BELOW!!!
 
 buildscript {
@@ -50,12 +54,12 @@ sourceCompatibility = compat
 targetCompatibility = compat
 mainClassName       = mainClass
 
-// Proguard task
-task proguard(type: ProGuardTask) {
-    configuration proguardCfgPath
-    injars jarpath + jarname + '-deobf.jar'
-    outjars jarpath + jarname + '.jar'
-}
+// Proguard task (Currently unsupported)
+//task proguard(type: ProGuardTask) {
+//    configuration proguardCfgPath
+//    injars jarpath + jarname + '-deobf.jar'
+//    outjars jarpath + jarname + '.jar'
+//}
 
 task copyToLib(type: Copy) {
     into "$buildDir/libs/libraries"
@@ -68,9 +72,51 @@ task copyNatives(type: Copy) {
     include "natives/"
 }
 
+task makeJre() {
+
+}
+
 build.dependsOn(copyToLib)
 build.dependsOn(copyNatives)
-proguard.dependsOn(build)
+//proguard.dependsOn(build)
+
+compileJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
+}
+
+compileTestJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+                '--add-modules', 'junit',
+                '--add-reads', "$moduleName=junit",
+                '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath,
+        ]
+        classpath = files()
+    }
+}
+
+test {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs = [
+                '--module-path', classpath.asPath,
+                '--add-modules', 'ALL-MODULE-PATH',
+                '--add-reads', "$moduleName=junit",
+                '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir).asPath,
+        ]
+        classpath = files()
+    }
+}
+
+
 
 // Jar configuration
 jar {
@@ -79,5 +125,5 @@ jar {
         attributes 'Main-Class': mainClass
         attributes 'Class-Path': configurations.runtime.files.collect { "libraries/$it.name" }.join(' ')
     }
-    configurations { jar.archiveName = jarname + '-deobf.jar' }
+    configurations { jar.archiveName = jarname + '.jar' }
 }

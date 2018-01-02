@@ -11,7 +11,7 @@
 -dontwarn
 
 # Include java runtime classes
--libraryjars  <java.home>/lib/rt.jar
+-libraryjars  <java.home>/lib/jrt-fs.jar
 
 # Output a source map file
 #-printmapping proguard.map

@@ -30,6 +30,7 @@ import static jouvieje.bass.utils.BufferUtils.newByteBuffer;
  * @site http://jerome.jouvie.free.fr/
  * @mail jerome.jouvie@gmail.com
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class SpectrumPanel extends JPanel {
     //private static final long serialVersionUID = 1L;
 
