@@ -44,7 +44,6 @@ public class MainFrame extends JFrame implements GuiFrame {
     private final JButton stopButton;
     private final JButton pauseButton;
     private final JButton managerButton;
-    private final JButton aboutButton;
     private final JCheckBox monitorCheck;
     private final MemoryMonitor heapMonitor;
     private final JTextField trackField;
@@ -57,13 +56,12 @@ public class MainFrame extends JFrame implements GuiFrame {
             stopButtonC = new GridBagConstraints(),
             pauseButtonC = new GridBagConstraints(),
             managerButtonC = new GridBagConstraints(),
-            aboutButtonC = new GridBagConstraints(),
             monitorCheckC = new GridBagConstraints(),
             heapMonitorC = new GridBagConstraints(),
             trackFieldC = new GridBagConstraints();
 
     // Flags
-    public boolean managerOpened = false;
+    boolean managerFrameOpened = false;
     public boolean mainFrameIconified = false;
     private boolean noMeta = false;
 
@@ -152,24 +150,13 @@ public class MainFrame extends JFrame implements GuiFrame {
         // ManagerButton
         managerButtonC.gridx      = 0;
         managerButtonC.gridy      = 6;
-        managerButtonC.gridwidth  = 2;
+        managerButtonC.gridwidth  = 3;
         managerButtonC.gridheight = 2;
         managerButtonC.weightx    = 0;
         managerButtonC.weighty    = 0;
         managerButtonC.anchor     = GridBagConstraints.NORTHWEST;
         managerButtonC.fill       = GridBagConstraints.HORIZONTAL;
         managerButtonC.insets = new Insets(0, 0, 1, 1);
-
-        // AboutButton
-        aboutButtonC.gridx      = 2;
-        aboutButtonC.gridy      = 6;
-        aboutButtonC.gridwidth  = 1;
-        aboutButtonC.gridheight = 2;
-        aboutButtonC.weightx    = 0;
-        aboutButtonC.weighty    = 0;
-        aboutButtonC.anchor     = GridBagConstraints.NORTHWEST;
-        aboutButtonC.fill       = GridBagConstraints.HORIZONTAL;
-        aboutButtonC.insets = new Insets(0, 1, 1, 1);
 
         // MonitorCheck
         monitorCheckC.gridx      = 3;
@@ -216,9 +203,8 @@ public class MainFrame extends JFrame implements GuiFrame {
         stopButton = new JButton(new ImageIcon(Utils.getResource("/icons/stop.png")));
         pauseButton = new JButton(new ImageIcon(Utils.getResource("/icons/pause.png")));
         managerButton = new JButton(new ImageIcon(Utils.getResource("/icons/radio.png")));
-        aboutButton = new JButton(new ImageIcon(Utils.getResource("/icons/about.png")));
         monitorCheck = new JCheckBox("Show monitor?", true);
-        heapMonitor = new MemoryMonitor(130, 70, 700);
+        heapMonitor = new MemoryMonitor(130, 70, 700, GuiUtils.getFont("fonts/Hack-Regular.ttf", Font.PLAIN, 11));
         trackField = new JTextField();
 
         // Actions
@@ -284,9 +270,9 @@ public class MainFrame extends JFrame implements GuiFrame {
 
         // ManagerButton
         managerButton.addActionListener(actionEvent -> {
-            if (managerOpened) return;
+            if (managerFrameOpened) return;
             ManagerFrame managerFrame = new ManagerFrame(this);
-            managerFrame.init();
+            managerFrame.frameShow();
         });
 
         // TrackField
@@ -347,10 +333,10 @@ public class MainFrame extends JFrame implements GuiFrame {
         balanceSlider.setToolTipText("Balance: " + balanceSlider.getValue());
         trackField.setToolTipText("Click to copy text to clipboard");
         managerButton.setToolTipText("Radio manager");
-        aboutButton.setToolTipText("About FCRPlayer2");
         playButton.setToolTipText("Play");
         stopButton.setToolTipText("Stop");
         pauseButton.setToolTipText("Pause");
+        heapMonitor.setToolTipText("Click to stop or resume");
 
         // Fonts
         stationList.setFont(GuiUtils.getFont("fonts/Helvetica.otf", Font.PLAIN, 13));
@@ -361,7 +347,7 @@ public class MainFrame extends JFrame implements GuiFrame {
         GuiUtils.setlaf(laf);
         GuiUtils.updateComponentsUi(this, soundVis, stationList, playButton,
                 stopButton, pauseButton, volumeSlider, balanceSlider, managerButton,
-                aboutButton, monitorCheck, heapMonitor, trackField);
+                monitorCheck, heapMonitor, trackField);
     }
 
     public MainFrame() {
@@ -373,6 +359,35 @@ public class MainFrame extends JFrame implements GuiFrame {
         this.setTitle(title);
         this.setVisible(true);
     }
+
+    @Override
+    public void frameShow() {
+        this.add(soundVis, soundVisC);
+        this.add(stationList, stationListC);
+        this.add(playButton, playButtonC);
+        this.add(stopButton, stopButtonC);
+        this.add(pauseButton, pauseButtonC);
+        this.add(volumeSlider, volumeSliderC);
+        this.add(balanceSlider, balanceSliderC);
+        this.add(managerButton, managerButtonC);
+        this.add(monitorCheck, monitorCheckC);
+        this.add(heapMonitor, heapMonitorC);
+        this.add(trackField, trackFieldC);
+
+        player = new ChannelPlayer(soundVis, this);
+        player.setVolume(volumeSlider.getValue() * 0.01f);
+        player.setBalance(balanceSlider.getValue() * 0.1f);
+        activeHeapMon(monitorCheck.isSelected());
+        metaTimer();
+    }
+
+    @Override
+    public void frameClose() {
+        this.setVisible(false);
+        this.dispose();
+    }
+
+    // Other methods
 
     private void activeHeapMon(boolean act) {
         if (act) {
@@ -409,7 +424,7 @@ public class MainFrame extends JFrame implements GuiFrame {
                                     noMeta = true;
                                     return;
                                 }
-                            } catch (Exception ignored) {}
+                            } catch (Exception ignored) { }
                             if (!trackField.isEnabled()) trackField.setEnabled(true);
                             noMeta = false;
                             trackField.setText(meta);
@@ -420,27 +435,5 @@ public class MainFrame extends JFrame implements GuiFrame {
                 }
             }
         }, 200, 1500);
-    }
-
-    @Override
-    public void init() {
-        this.add(soundVis, soundVisC);
-        this.add(stationList, stationListC);
-        this.add(playButton, playButtonC);
-        this.add(stopButton, stopButtonC);
-        this.add(pauseButton, pauseButtonC);
-        this.add(volumeSlider, volumeSliderC);
-        this.add(balanceSlider, balanceSliderC);
-        this.add(managerButton, managerButtonC);
-        this.add(aboutButton, aboutButtonC);
-        this.add(monitorCheck, monitorCheckC);
-        this.add(heapMonitor, heapMonitorC);
-        this.add(trackField, trackFieldC);
-
-        player = new ChannelPlayer(soundVis, this);
-        player.setVolume(volumeSlider.getValue() * 0.01f);
-        player.setBalance(balanceSlider.getValue() * 0.1f);
-        activeHeapMon(monitorCheck.isSelected());
-        metaTimer();
     }
 }

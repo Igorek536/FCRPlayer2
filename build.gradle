@@ -37,7 +37,6 @@ dependencies {
     compile name: 'NativeBass'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.10.0'
     compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.16'
 }
 // DO NOT EDIT LINES BELOW!!!

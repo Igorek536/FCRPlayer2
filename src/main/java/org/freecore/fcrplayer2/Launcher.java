@@ -19,12 +19,15 @@ import static jouvieje.bass.Bass.BASS_Init;
 @SuppressWarnings("FieldCanBeLocal")
 public class Launcher {
 
+    private static final String version = "2.0.1";
+
+
     private static Config config;
 
     private String configName = "config.dat";
     private boolean isSystemSupported = true;
     private boolean bassInit = false;
-    private final Logger logger = LogManager.getLogger("Launcher");
+    private final Logger logger = LogManager.getRootLogger();
     private final Runtime runtime = Runtime.getRuntime();
 
     Launcher() {
@@ -50,8 +53,20 @@ public class Launcher {
         initConfig();
     }
 
+    void launch() {
+        GuiFrame mainFrame = new MainFrame();
+        logger.debug("Launching...");
+        mainFrame.frameShow();
+    }
+
+    // Other methods
+
     public static Config getConfig() {
         return config;
+    }
+
+    public static String getVersion() {
+        return version;
     }
 
     private void setLibPath() {
@@ -128,10 +143,42 @@ public class Launcher {
             config.setBalance(0);
             config.setMonitor(false);
             config.putStation("Radio Record Dance", "http://air.radiorecord.ru:8101/rr_320");
-            config.putStation("KissFM UA", "http://online-kissfm.tavrmedia.ua/KissFM_Live");
-            config.putStation("Русский Хит", "http://ruhit3.imgradio.pro:80/RusHit48");
+            config.putStation("Radio Record Megamix", "http://air.radiorecord.ru:805/mix_320");
+            config.putStation("Radio Record Deep", "http://air.radiorecord.ru:805/deep_320");
+            config.putStation("Radio Record Club", "http://air.radiorecord.ru:805/club_320");
+            config.putStation("Radio Record Future", "http://air.radiorecord.ru:805/fut_320");
+            config.putStation("Radio Record Trancemission", "http://air.radiorecord.ru:805/tm_320");
+            config.putStation("Radio Record Chillout", "http://air.radiorecord.ru:805/chil_320");
+            config.putStation("Radio Record Minimal", "http://air.radiorecord.ru:805/mini_320");
+            config.putStation("Radio Record Pirate Station", "http://air.radiorecord.ru:805/ps_320");
+            config.putStation("Radio Record Russian Mix", "http://air.radiorecord.ru:805/rus_320");
+            config.putStation("Radio Record Vip Mix", "http://air.radiorecord.ru:805/vip_320");
+            config.putStation("Radio Record Superdiscoteka 90's", "http://air.radiorecord.ru:805/sd90_320");
+            config.putStation("Radio Record Breaks", "http://air.radiorecord.ru:805/brks_320");
+            config.putStation("Radio Record Dubstep", "http://air.radiorecord.ru:805/dub_320");
+            config.putStation("Radio Record Dancecore", "http://air.radiorecord.ru:805/dc_320");
+            config.putStation("Radio Record Techno", "http://air.radiorecord.ru:805/techno_320");
+            config.putStation("Radio Record Teodor", "http://air.radiorecord.ru:805/teo_320");
+            config.putStation("Radio Record Trap", "http://air.radiorecord.ru:805/trap_320");
+            config.putStation("Radio Record Pump'n'Klubb", "http://air.radiorecord.ru:805/pump_320");
+            config.putStation("Radio Record Rock", "http://air.radiorecord.ru:805/rock_320");
+            config.putStation("Radio Record Medlyak FM", "http://air.radiorecord.ru:805/mdl_320");
+            config.putStation("Radio Record GOP FM", "http://air.radiorecord.ru:805/gop_320");
+            config.putStation("Radio Record YO FM", "http://air.radiorecord.ru:805/yo_320");
+            config.putStation("Radio Record Rave", "http://air.radiorecord.ru:805/rave_320");
             config.putStation("Радио Улитка", "http://air.radioulitka.ru:8000/ulitka_128");
             config.putStation("Radio Rocks", "http://online-radioroks.tavrmedia.ua/RadioROKS");
+            config.putStation("Просто Радио", "http://62.80.190.246:8000/ProstoRadiO128");
+            config.putStation("Русское Радио", "http://online-rusradio.tavrmedia.ua/RusRadio");
+            config.putStation("Наше Радио", "http://cast.radiogroup.com.ua:8000/nashe");
+            config.putStation("Европа Плюс", "http://cast.radiogroup.com.ua:8000/europaplus");
+            config.putStation("Авто Радио", "http://cast.radiogroup.com.ua:8000/avtoradio");
+            config.putStation("DJ FM", "http://r.ezbt.me:80/djfm-ukraine");
+            config.putStation("Радио Сон", "http://www.radioson.ru:8009/amsterdam-trance-radio.mp3");
+            config.putStation("Best FM", "http://radio.bestfm.fm:8080/bestfm");
+            config.putStation("Ретро ФМ", "http://cast.radiogroup.com.ua:8000/retro");
+            config.putStation("KissFM UA", "http://online-kissfm.tavrmedia.ua/KissFM_Live");
+            config.putStation("Русский Хит", "http://ruhit3.imgradio.pro:80/RusHit48");
             config.putStation("Хит ФМ", "http://online-hitfm.tavrmedia.ua/HitFM");
             Launcher.config = config;
         } else {
@@ -142,11 +189,5 @@ public class Launcher {
                 logger.error("Can't deserialize configuration file!", e);
             }
         }
-    }
-
-    void launch() {
-        GuiFrame mainFrame = new MainFrame();
-        logger.debug("Launching...");
-        mainFrame.init();
     }
 }

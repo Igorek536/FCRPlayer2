@@ -2,16 +2,16 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="RootConsole" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} %style{[}{cyan} %style{%t}{blue} %style{]}{cyan} %highlight{%-5level:}{FATAL=white, ERROR=red, WARN=blue, INFO=black, DEBUG=green, TRACE=blue} %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %style{[}{cyan}%style{%t}{green}%style{]}{cyan} %highlight{%-5level:}{FATAL=magenta, ERROR=red, WARN=yellow, INFO=cyan, DEBUG=white, TRACE=green}%logger{36} - %msg%n"/>
         </Console>
         <File name="RootFile" fileName="all.log" immediateFlush="false" append="false">
             <PatternLayout pattern="%d{dd-mm-yyyy HH:mm:ss.SSS} [ %t ] %-5level %logger{36} - %msg%n"/>
         </File>
     </Appenders>
     <Loggers>
-        <Root level="all">
+        <Root level="info">
             <AppenderRef ref="RootConsole"/>
-            <AppenderRef ref="RootFile"/>
+            <!--AppenderRef ref="RootFile"/-->
         </Root>
     </Loggers>
 </Configuration>

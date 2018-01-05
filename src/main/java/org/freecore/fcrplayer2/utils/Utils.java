@@ -40,30 +40,28 @@ public class Utils {
         }
     }
 
-    /*
     // Some edited by me.
     // Original on StackOverflow:
     // https://stackoverflow.com/a/7690178
-    public static String getProcessId() throws PIDException {
-        // Note: may fail in some JVM implementations
-        // therefore fallback has to be provided
-
-        // something like '<pid>@<hostname>', at least in SUN / Oracle JVMs
-        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-        int index = jvmName.indexOf('@');
-
-        if (index < 1) {
-            // part before '@' empty (index = 0) / '@' not found (index = -1)
-            throw new PIDException();
-        }
-
-        try {
-            return Long.toString(Long.parseLong(jvmName.substring(0, index)));
-        } catch (NumberFormatException e) {
-            throw new PIDException();
-        }
-    }
-    */
+    //  public static String getProcessId() throws PIDException {
+    //        // Note: may fail in some JVM implementations
+    //        // therefore fallback has to be provided
+    //
+    //        // something like '<pid>@<hostname>', at least in SUN / Oracle JVMs
+    //      String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+    //      int index = jvmName.indexOf('@');
+    //
+    //      if (index < 1) {
+    //      // part before '@' empty (index = 0) / '@' not found (index = -1)
+    //          throw new PIDException();
+    //      }
+    //
+    //      try {
+    //          return Long.toString(Long.parseLong(jvmName.substring(0, index)));
+    //      } catch (NumberFormatException e) {
+    //          throw new PIDException();
+    //      }
+    //  }
 
     /**
      * This method kill the current process. It use system commands
@@ -156,5 +154,12 @@ public class Utils {
     public static void copyToClipboard(String text) {
         Toolkit.getDefaultToolkit().getSystemClipboard()
                 .setContents(new StringSelection(text), null);
+    }
+
+    public static float round(float number, int scale) {
+        int pow = 10;
+        for (int i = 1; i < scale; i++) pow *= 10;
+        float tmp = number * pow;
+        return (float) (int) ((tmp - (int) tmp) >= 0.5f ? tmp + 1 : tmp) / pow;
     }
 }

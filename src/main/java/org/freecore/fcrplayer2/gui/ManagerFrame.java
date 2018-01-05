@@ -169,7 +169,7 @@ public class ManagerFrame extends JFrame implements GuiFrame {
         this.addWindowListener(new WindowListener() {
             @Override
             public void windowOpened(WindowEvent windowEvent) {
-                mainFrame.managerOpened = true;
+                mainFrame.managerFrameOpened = true;
             }
 
             @Override
@@ -179,7 +179,7 @@ public class ManagerFrame extends JFrame implements GuiFrame {
 
             @Override
             public void windowClosed(WindowEvent windowEvent) {
-                mainFrame.managerOpened = false;
+                mainFrame.managerFrameOpened = false;
             }
 
             @Override
@@ -225,7 +225,7 @@ public class ManagerFrame extends JFrame implements GuiFrame {
     }
 
     @Override
-    public void init() {
+    public void frameShow() {
         this.add(stationsTableS, stationsTableC);
         this.add(nameField, nameFieldC);
         this.add(urlField, urlFieldC);
@@ -234,6 +234,13 @@ public class ManagerFrame extends JFrame implements GuiFrame {
 
         updateTableData();
     }
+
+    @Override
+    public void frameClose() {
+
+    }
+
+    // Other methods
 
     private void updateTableData() {
         while (stationsData.getRowCount() > 0) {
