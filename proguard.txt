@@ -1,7 +1,8 @@
 ##################################
 #  ProGuard config by Igorek536  #
 #  Only for Freecore projects!   #
-#  Version 1.0                   #
+#  Requires Java 9!              #
+#  Version 1.1                   #
 ##################################
 
 # This config was found on the github and modified.
@@ -10,8 +11,10 @@
 # WARNINGS! Warnings everywhere! So remove it ;)
 -dontwarn
 
-# Include java runtime classes
--libraryjars  <java.home>/lib/jrt-fs.jar
+# Include java runtime classes and modules
+-libraryjars  <java.home>/jmods
+-libraryjars  <java.home>/lib
+-dontnote
 
 # Output a source map file
 #-printmapping proguard.map

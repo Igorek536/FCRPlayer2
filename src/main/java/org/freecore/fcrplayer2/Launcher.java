@@ -19,7 +19,7 @@ import static jouvieje.bass.Bass.BASS_Init;
 @SuppressWarnings("FieldCanBeLocal")
 public class Launcher {
 
-    private static final String version = "2.0.1";
+    private static final String version = "2.1.0";
 
 
     private static Config config;
@@ -142,30 +142,30 @@ public class Launcher {
             config.setVolume(100);
             config.setBalance(0);
             config.setMonitor(false);
-            config.putStation("Radio Record Dance", "http://air.radiorecord.ru:8101/rr_320");
-            config.putStation("Radio Record Megamix", "http://air.radiorecord.ru:805/mix_320");
-            config.putStation("Radio Record Deep", "http://air.radiorecord.ru:805/deep_320");
-            config.putStation("Radio Record Club", "http://air.radiorecord.ru:805/club_320");
-            config.putStation("Radio Record Future", "http://air.radiorecord.ru:805/fut_320");
-            config.putStation("Radio Record Trancemission", "http://air.radiorecord.ru:805/tm_320");
-            config.putStation("Radio Record Chillout", "http://air.radiorecord.ru:805/chil_320");
-            config.putStation("Radio Record Minimal", "http://air.radiorecord.ru:805/mini_320");
-            config.putStation("Radio Record Pirate Station", "http://air.radiorecord.ru:805/ps_320");
-            config.putStation("Radio Record Russian Mix", "http://air.radiorecord.ru:805/rus_320");
-            config.putStation("Radio Record Vip Mix", "http://air.radiorecord.ru:805/vip_320");
-            config.putStation("Radio Record Superdiscoteka 90's", "http://air.radiorecord.ru:805/sd90_320");
-            config.putStation("Radio Record Breaks", "http://air.radiorecord.ru:805/brks_320");
-            config.putStation("Radio Record Dubstep", "http://air.radiorecord.ru:805/dub_320");
-            config.putStation("Radio Record Dancecore", "http://air.radiorecord.ru:805/dc_320");
-            config.putStation("Radio Record Techno", "http://air.radiorecord.ru:805/techno_320");
-            config.putStation("Radio Record Teodor", "http://air.radiorecord.ru:805/teo_320");
-            config.putStation("Radio Record Trap", "http://air.radiorecord.ru:805/trap_320");
-            config.putStation("Radio Record Pump'n'Klubb", "http://air.radiorecord.ru:805/pump_320");
-            config.putStation("Radio Record Rock", "http://air.radiorecord.ru:805/rock_320");
-            config.putStation("Radio Record Medlyak FM", "http://air.radiorecord.ru:805/mdl_320");
-            config.putStation("Radio Record GOP FM", "http://air.radiorecord.ru:805/gop_320");
-            config.putStation("Radio Record YO FM", "http://air.radiorecord.ru:805/yo_320");
-            config.putStation("Radio Record Rave", "http://air.radiorecord.ru:805/rave_320");
+            config.putStation("Record Dance", "http://air.radiorecord.ru:8101/rr_320");
+            config.putStation("Record Megamix", "http://air.radiorecord.ru:805/mix_320");
+            config.putStation("Record Deep", "http://air.radiorecord.ru:805/deep_320");
+            config.putStation("Record Club", "http://air.radiorecord.ru:805/club_320");
+            config.putStation("Record Future", "http://air.radiorecord.ru:805/fut_320");
+            config.putStation("Record Trancemission", "http://air.radiorecord.ru:805/tm_320");
+            config.putStation("Record Chillout", "http://air.radiorecord.ru:805/chil_320");
+            config.putStation("Record Minimal", "http://air.radiorecord.ru:805/mini_320");
+            config.putStation("Record Pirate Station", "http://air.radiorecord.ru:805/ps_320");
+            config.putStation("Record Russian Mix", "http://air.radiorecord.ru:805/rus_320");
+            config.putStation("Record Vip Mix", "http://air.radiorecord.ru:805/vip_320");
+            config.putStation("Record Superdiscoteka 90's", "http://air.radiorecord.ru:805/sd90_320");
+            config.putStation("Record Breaks", "http://air.radiorecord.ru:805/brks_320");
+            config.putStation("Record Dubstep", "http://air.radiorecord.ru:805/dub_320");
+            config.putStation("Record Dancecore", "http://air.radiorecord.ru:805/dc_320");
+            config.putStation("Record Techno", "http://air.radiorecord.ru:805/techno_320");
+            config.putStation("Record Teodor", "http://air.radiorecord.ru:805/teo_320");
+            config.putStation("Record Trap", "http://air.radiorecord.ru:805/trap_320");
+            config.putStation("Record Pump'n'Klubb", "http://air.radiorecord.ru:805/pump_320");
+            config.putStation("Record Rock", "http://air.radiorecord.ru:805/rock_320");
+            config.putStation("Record Medlyak FM", "http://air.radiorecord.ru:805/mdl_320");
+            config.putStation("Record GOP FM", "http://air.radiorecord.ru:805/gop_320");
+            config.putStation("Record YO FM", "http://air.radiorecord.ru:805/yo_320");
+            config.putStation("Record Rave", "http://air.radiorecord.ru:805/rave_320");
             config.putStation("Радио Улитка", "http://air.radioulitka.ru:8000/ulitka_128");
             config.putStation("Radio Rocks", "http://online-radioroks.tavrmedia.ua/RadioROKS");
             config.putStation("Просто Радио", "http://62.80.190.246:8000/ProstoRadiO128");
