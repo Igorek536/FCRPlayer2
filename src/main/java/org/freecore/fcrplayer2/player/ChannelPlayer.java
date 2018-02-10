@@ -23,6 +23,10 @@ import static jouvieje.bass.defines.BASS_TAG.BASS_TAG_OGG;
 
 public class ChannelPlayer implements Player {
 
+    // TODO: move to SpectrumPanel class
+    private static final int visDefaultInterval = 25;
+    private static int visUpdateInterval = visDefaultInterval;
+
     private static HSTREAM channel;
     private float volume;
     private float balance;
@@ -34,11 +38,13 @@ public class ChannelPlayer implements Player {
 
     private MainFrame mainFrame;
 
-    public ChannelPlayer(MainFrame mainFrame) {
-        this.mainFrame = mainFrame;
-        BASS_SetConfig(BASS_CONFIG_NET_PLAYLIST, 1);
-        BASS_StreamFree(channel);
-    }
+    // Currently ChannelPlayer tested only with SpectrumPanel component
+    // TODO: allow to use ChannelPlayer without SpectrumPanel component.
+    //public ChannelPlayer(MainFrame mainFrame) {
+    //    this.mainFrame = mainFrame;
+    //    BASS_SetConfig(BASS_CONFIG_NET_PLAYLIST, 1);
+    //    BASS_StreamFree(channel);
+    //}
 
     public ChannelPlayer(SpectrumPanel spectrum, MainFrame mainFrame) {
         this.spectrum = spectrum;
@@ -52,6 +58,16 @@ public class ChannelPlayer implements Player {
             logger.debug("Connection: " + BufferUtils.toString(buffer));
         }
     };
+
+    public void setVisUpdateInterval(int interval) {
+        if (interval >= visDefaultInterval) {
+            visUpdateInterval = interval;
+        }
+        if (visTimer != null) {
+            visTimer.cancel();
+            updateVis();
+        }
+    }
 
     private void runTimer() {
         channelTimer = new Timer();
@@ -84,7 +100,7 @@ public class ChannelPlayer implements Player {
                     }
                 }
             }
-        }, 0, 25);
+        }, 0, visUpdateInterval);
     }
 
     @Override
@@ -99,8 +115,7 @@ public class ChannelPlayer implements Player {
                 try {
                     channelTimer.cancel();
                     visTimer.cancel();
-                } catch (Exception ignored) {
-                }
+                } catch (Exception ignored) { }
                 BASS_StreamFree(channel);
                 channel = BASS_StreamCreateURL(url, 0,
                         BASS_STREAM_BLOCK | BASS_STREAM_STATUS | BASS_STREAM_AUTOFREE,

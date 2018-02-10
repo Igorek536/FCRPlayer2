@@ -23,13 +23,13 @@ import java.util.TimerTask;
 @SuppressWarnings("FieldCanBeLocal")
 public class MainFrame extends JFrame implements GuiFrame {
 
-    private final int width = 450, height = 330;
+    private final int width = 450, height = 333;
     private final String laf = "Nimbus";
     private final String title = "FCRPlayer2 ";
     private String[] metas = new String[2];
 
     private final Logger logger = LogManager.getLogger("MainFrame");
-    private boolean pause = false;
+    private boolean pause = false, stop = false;
     private Timer metaTimer;
 
     // Player
@@ -101,7 +101,7 @@ public class MainFrame extends JFrame implements GuiFrame {
         playButtonC.weighty    = 0;
         playButtonC.anchor     = GridBagConstraints.NORTHEAST;
         playButtonC.fill       = GridBagConstraints.HORIZONTAL;
-        playButtonC.insets = new Insets(1, 0, 0, 1);
+        playButtonC.insets = new Insets(1, 1, 0, 0);
 
         // StopButton
         stopButtonC.gridx      = 1;
@@ -112,7 +112,7 @@ public class MainFrame extends JFrame implements GuiFrame {
         stopButtonC.weighty    = 0;
         stopButtonC.anchor     = GridBagConstraints.NORTHWEST;
         stopButtonC.fill       = GridBagConstraints.HORIZONTAL;
-        stopButtonC.insets = new Insets(1, 1, 0, 1);
+        stopButtonC.insets = new Insets(1, 0, 0, 0);
 
         // PauseButton
         pauseButtonC.gridx      = 2;
@@ -123,7 +123,7 @@ public class MainFrame extends JFrame implements GuiFrame {
         pauseButtonC.weighty    = 0;
         pauseButtonC.anchor     = GridBagConstraints.NORTHWEST;
         pauseButtonC.fill       = GridBagConstraints.HORIZONTAL;
-        pauseButtonC.insets = new Insets(1, 1, 0, 1);
+        pauseButtonC.insets = new Insets(1, 0, 0, 1);
 
         // VolumeSlider
         volumeSliderC.gridx      = 3;
@@ -189,7 +189,7 @@ public class MainFrame extends JFrame implements GuiFrame {
         trackFieldC.weighty    = 0;
         trackFieldC.anchor     = GridBagConstraints.SOUTH;
         trackFieldC.fill       = GridBagConstraints.HORIZONTAL;
-        trackFieldC.insets = new Insets(1, 0, 1, 1);
+        trackFieldC.insets = new Insets(0, 0, 1, 1);
     }
 
     // Components initialization
@@ -206,6 +206,10 @@ public class MainFrame extends JFrame implements GuiFrame {
         monitorCheck = new JCheckBox("Show monitor?", true);
         heapMonitor = new MemoryMonitor(130, 70, 700, GuiUtils.getFont("fonts/Hack-Regular.ttf", Font.PLAIN, 11));
         trackField = new JTextField();
+
+        // Frame icon
+        this.setIconImage(new ImageIcon(Utils.getResource("/icons/fcrplayer2.png")).getImage());
+
 
         // Actions
 
@@ -245,6 +249,7 @@ public class MainFrame extends JFrame implements GuiFrame {
                     pause = false;
                     return;
                 }
+                if (stop) stop = false;
                 player.play(Launcher.getConfig().getStation((String) stationList.getSelectedItem()));
                 player.setDefaultVolume(volumeSlider.getValue() * 0.01f);
                 player.setDefaultBalance(balanceSlider.getValue() * 0.1f);
@@ -256,12 +261,18 @@ public class MainFrame extends JFrame implements GuiFrame {
 
         // StopButton
         stopButton.addActionListener(actionEvent -> {
+            if (pause) {
+                player.start();
+                pause = false;
+            }
             player.stop();
             super.setTitle(title);
+            stop = true;
         });
 
         // PauseButton
         pauseButton.addActionListener(actionEvent -> {
+            if (stop) return;
             if (!pause) {
                 player.pause();
                 pause = true;

@@ -14,7 +14,7 @@ import java.awt.event.*;
 @SuppressWarnings("FieldCanBeLocal")
 public class ManagerFrame extends JFrame implements GuiFrame {
 
-    private final int width = 300, height = 400;
+    private final int width = 400, height = 400;
     private final String laf = "Nimbus";
     private final String title = "Radio manager";
 
@@ -119,6 +119,9 @@ public class ManagerFrame extends JFrame implements GuiFrame {
         removeButton = new JButton(new ImageIcon(Utils.getResource("/icons/remove.png")));
         stationsTableS = new JScrollPane(stationsTable);
         stationsTableS.setMinimumSize(new Dimension(width, 200));
+
+        // Frame icon
+        this.setIconImage(new ImageIcon(Utils.getResource("/icons/fcrplayer2.png")).getImage());
 
         // Actions
 
